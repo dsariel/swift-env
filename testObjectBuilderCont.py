@@ -1,4 +1,4 @@
 import pickle
-print pickle.load(open('object.builder'))
+print pickle.load(open('/etc/swift/object.builder'))
 
 

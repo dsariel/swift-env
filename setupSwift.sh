@@ -1,6 +1,3 @@
-
-cd /root/swift/tools; ./test-setup.sh # installs EC lib (required for all tests except pep8)
-
 # Swift Dependencies
 yum install -y git curl gcc memcached rsync sqlite xfsprogs git-core \
             libffi-devel xinetd python-setuptools python-coverage \
@@ -33,7 +30,7 @@ cp swift.conf-sample /etc/swift/swift.conf
 
 
 # Mounting drives
-for i in {0..3}
+for i in {1..4}
 do
    truncate -s 1GB /srv/node/1G_xfs_file$i
    /sbin/mkfs.xfs -f /srv/node/1G_xfs_file$i
@@ -55,9 +52,12 @@ swift-ring-builder account.builder create 17 3 1
 swift-ring-builder container.builder create 17 3 1
 swift-ring-builder object.builder create 17 3 1
 swift-ring-builder object-1.builder create 17 4 1
+pushd /root/run/swift-env
 python testObjectBuilderCont.py
+popd 
 
 # Adding Devices to the Builder Files
+cd /etc/swift
 for i in {0..3}
 do
     swift-ring-builder account.builder add r1z1-127.0.0.1:6002/xfstmp$i 100
@@ -84,14 +84,25 @@ service rsyslog restart # TODO find how start the service in Docker container
 
 
 # Setting the Hash Path Prefix and Suffix
-sed -i '0,/changeme/{s/changeme/ACbO0g5Ry96CE7UqIkYbd4ZL3SVs7gkkItrnv1ri/og/}' swift.conf
+sed -i '0,/changeme/{s/changeme/ACbO0g5Ry96CE7UqIkYbd4ZL3SVs7gkkItrnv1riiog/}' swift.conf
 sed -i '0,/changeme/{s/changeme/4mx7zVcgiAbmXdZiJR8z1ydKm393TcO47L9Ng6hnK+Y/}' swift.conf
 
 
-# Starting the Proxy Server
-yum install -y python2-pyeclib.x86_64
-pip install xattr
+# Install remaining deps for Proxy Server
 
+#   mount 1G file on loop0 (note that loop1-4 were occupied before)
+#   install Openstack and liberasurecode (current release)
+/opt/swift/tools/test-setup.sh
+
+#   install pyeclib and xattr
+pip install pyeclib
+pip install xattr
+pip install dnspython>=1.14.0 --upgrade
+pip install lxml
+
+
+# yum install -y python2-pyeclib.x86_64
+# Starting the Proxy Server
 swift-init proxy start
 
 # Starting the Servers and Restarting the Proxy
