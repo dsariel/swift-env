@@ -1,4 +1,5 @@
 import pickle
-print pickle.load(open('/etc/swift/object.builder'))
+import pprint
+pprint.pprint( pickle.load(open('/etc/swift/object.builder')))
 
 

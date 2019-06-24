@@ -7,14 +7,14 @@ yum install -y git curl gcc memcached rsync sqlite xfsprogs git-core \
 
 # Installing the Swift CLI (python-swiftclient)
 cd /opt
-git clone https://github.com/openstack/python-swiftclient.git
+git clone --single-branch --branch stable/rocky https://github.com/openstack/python-swiftclient.git
 cd /opt/python-swiftclient; sudo pip install -r requirements.txt;
 python setup.py install; cd ..
 
 
 # Installing Swift
 cd /opt
-git clone https://github.com/openstack/swift.git
+git clone --single-branch --branch stable/rocky https://github.com/openstack/swift.git
 cd /opt/swift ; sudo python setup.py install; cd ..
 
 
@@ -58,7 +58,7 @@ popd
 
 # Adding Devices to the Builder Files
 cd /etc/swift
-for i in {0..3}
+for i in {1..4}
 do
     swift-ring-builder account.builder add r1z1-127.0.0.1:6002/xfstmp$i 100
     swift-ring-builder container.builder add r1z1-127.0.0.1:6001/xfstmp$i 100
