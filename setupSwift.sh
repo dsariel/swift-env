@@ -1,21 +1,3 @@
-# Swift Dependencies
-yum install -y git curl gcc memcached rsync sqlite xfsprogs git-core \
-            libffi-devel xinetd python-setuptools python-coverage \
-            python-devel python-nose python-simplejson pyxattr \
-            python-eventlet python-greenlet python-paste-deploy \
-            python-netifaces python-pip python-dns python-mock
-
-# Installing the Swift CLI (python-swiftclient)
-cd /opt
-git clone --single-branch --branch stable/rocky https://github.com/openstack/python-swiftclient.git
-cd /opt/python-swiftclient; sudo pip install -r requirements.txt;
-python setup.py install; cd ..
-
-
-# Installing Swift
-cd /opt
-git clone --single-branch --branch stable/rocky https://github.com/openstack/swift.git
-cd /opt/swift ; sudo python setup.py install; cd ..
 
 
 # Copying in Swift Configuration Files
@@ -92,13 +74,13 @@ sed -i '0,/changeme/{s/changeme/4mx7zVcgiAbmXdZiJR8z1ydKm393TcO47L9Ng6hnK+Y/}' s
 
 #   mount 1G file on loop0 (note that loop1-4 were occupied before)
 #   install Openstack and liberasurecode (current release)
-/opt/swift/tools/test-setup.sh
+#/opt/swift/tools/test-setup.sh
 
 #   install pyeclib and xattr
-pip install pyeclib
-pip install xattr
-pip install dnspython>=1.14.0 --upgrade
-pip install lxml
+#pip install pyeclib
+#pip install xattr
+#pip install dnspython>=1.14.0 --upgrade
+#pip install lxml
 
 
 # yum install -y python2-pyeclib.x86_64

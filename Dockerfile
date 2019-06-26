@@ -40,5 +40,39 @@ ENV HOME /root
 # Define working directory.
 WORKDIR /root
 
+
+##########################################################################################
+# Swift setup - start
+##########################################################################################
+# Swift Dependencies
+RUN yum install -y git curl gcc memcached rsync sqlite xfsprogs git-core \
+            libffi-devel xinetd python-setuptools python-coverage \
+            python-devel python-nose python-simplejson pyxattr \
+            python-eventlet python-greenlet python-paste-deploy \
+            python-netifaces python-pip python-dns python-mock
+
+# Installing the Swift CLI (python-swiftclient)
+RUN cd /opt && \
+    git clone --single-branch --branch stable/rocky https://github.com/openstack/python-swiftclient.git && \
+    cd /opt/python-swiftclient && \
+    sudo pip install -r requirements.txt && \
+    python setup.py install;
+
+# Installing Swift
+RUN cd /opt && \
+    git clone --single-branch --branch stable/rocky https://github.com/openstack/swift.git && \
+    cd /opt/swift && \ 
+    sed -i "s/-xe/-x/g" /opt/swift/tools/test-setup.sh && \
+    /opt/swift/tools/test-setup.sh && \
+    sudo pip install -r requirements.txt && \
+    sudo python setup.py install;
+#  remove -e - no mount during the build
+#  installs OpenStack and liberasurecode libs (of the current release)
+
+##########################################################################################
+# Swift setup - end 
+##########################################################################################
+
 # Define default command.
 CMD ["bash"]
+
