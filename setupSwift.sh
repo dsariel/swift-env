@@ -35,7 +35,7 @@ swift-ring-builder container.builder create 17 3 1
 swift-ring-builder object.builder create 17 3 1
 swift-ring-builder object-1.builder create 17 4 1
 pushd /root/run/swift-env
-python testObjectBuilderCont.py
+python testBuilderContent.py
 popd 
 
 # Adding Devices to the Builder Files

@@ -4,16 +4,11 @@
 
 FROM centos:7 
 
-# Install.
+##################################################################################
+# Install Development Tools and libs
 RUN \
   yum -y groupinstall 'Development Tools' \
-  yum -y install byobu curl git htop man unzip vim wget 
-
-#RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm
-#RUN yum update -y
-#RUN yum install -y python36u python36u-libs python36u-devel python36u-pip
-RUN yum install -y vim 
-RUN yum install -y sudo
+  yum -y install byobu curl git htop man unzip vim wget crudini vim sudo 
 
 # according to http://zuul.openstack.org/job/swift-probetests-centos-7
 RUN yum install -y wget
@@ -32,13 +27,16 @@ RUN yum install -y libffi-devel libxml2-devel libxslt-devel memcached openssl-de
 RUN yum install -y python-pip man
 RUN python -m pip install --upgrade pip
 RUN pip install tox --upgrade
+###################################################################################
 
 
+###################################################################################
 # Set environment variables.
 ENV HOME /root
 
 # Define working directory.
 WORKDIR /root
+###################################################################################
 
 
 ##########################################################################################
