@@ -82,6 +82,11 @@ sed -i '0,/changeme/{s/changeme/4mx7zVcgiAbmXdZiJR8z1ydKm393TcO47L9Ng6hnK+Y/}' s
 #pip install dnspython>=1.14.0 --upgrade
 #pip install lxml
 
+# Adding Users to proxy-server.conf
+crudini --set /etc/swift/proxy-server.conf "filter:tempauth" user_test_tester3 testing3
+crudini --set /etc/swift/proxy-server.conf "filter:tempauth" user_myaccount_me "secretpassword .admin .reseller_admin <storage URL:8080>"
+crudini --set /etc/swift/proxy-server.conf "app:proxy-server" allow_account_management true
+crudini --set /etc/swift/proxy-server.conf "app:proxy-server" account_autocreate true
 
 # yum install -y python2-pyeclib.x86_64
 # Starting the Proxy Server
