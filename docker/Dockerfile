@@ -8,7 +8,7 @@ FROM centos:7
 # Install Development Tools and libs
 RUN \
   yum -y groupinstall 'Development Tools' \
-  yum -y install byobu curl git htop man unzip vim wget crudini vim sudo 
+  yum -y install byobu curl git htop man unzip vim wget vim sudo crudini 
 
 # according to http://zuul.openstack.org/job/swift-probetests-centos-7
 RUN yum install -y wget
@@ -53,17 +53,19 @@ RUN yum install -y git curl gcc memcached rsync sqlite xfsprogs git-core \
 RUN cd /opt && \
     git clone --single-branch --branch stable/rocky https://github.com/openstack/python-swiftclient.git && \
     cd /opt/python-swiftclient && \
-    sudo pip install -r requirements.txt && \
+    pip install -r requirements.txt && \
     python setup.py install;
 
+RUN yum install -y sudo crudini
 # Installing Swift
 RUN cd /opt && \
     git clone --single-branch --branch stable/rocky https://github.com/openstack/swift.git && \
     cd /opt/swift && \ 
     sed -i "s/-xe/-x/g" /opt/swift/tools/test-setup.sh && \
-    /opt/swift/tools/test-setup.sh && \
-    sudo pip install -r requirements.txt && \
-    sudo python setup.py install;
+    /opt/swift/tools/test-setup.sh
+RUN cd /opt/swift && pip install pip --upgrade && pip install setuptools --upgrade && \
+    pip install -r requirements.txt && \
+    python setup.py install;
 #  remove -e - no mount during the build
 #  installs OpenStack and liberasurecode libs (of the current release)
 

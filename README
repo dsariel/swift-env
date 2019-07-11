@@ -1,0 +1,13 @@
+from the host CLI:
+
+1. download CentOS 7.6 cloud image
+2. set IMAGE_PATH to the downloaded image
+3. ./prepare.sh $IMAGE_PATH
+4. ./run.sh $IMAGE_PATH
+5. ./connect.sh $IMAGE_PATH
+
+from the VM CLI
+6. ./switPrepare.sh
+7. ./swiftRun.sh
+
+

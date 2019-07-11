@@ -1,4 +1,4 @@
-
+#/bin/bash -xe
 
 # Copying in Swift Configuration Files
 mkdir -p /etc/swift
@@ -17,10 +17,10 @@ do
    truncate -s 1GB /srv/node/1G_xfs_file$i
    /sbin/mkfs.xfs -f /srv/node/1G_xfs_file$i
    mkdir -p /srv/node/xfstmp$i
-   sudo mknod -m660 /dev/loop$i b 7 $i
+   mknod -m660 /dev/loop$i b 7 $i
    /bin/chown root:disk /dev/loop$i
-   sudo mount -o loop,noatime,nodiratime /srv/node/1G_xfs_file$i /srv/node/xfstmp$i
-   sudo chmod 777 /srv/node/xfstmp$i
+   mount -o loop,noatime,nodiratime /srv/node/1G_xfs_file$i /srv/node/xfstmp$i
+   chmod 777 /srv/node/xfstmp$i
 done
 
 
@@ -34,7 +34,7 @@ swift-ring-builder account.builder create 17 3 1
 swift-ring-builder container.builder create 17 3 1
 swift-ring-builder object.builder create 17 3 1
 swift-ring-builder object-1.builder create 17 4 1
-pushd /root/run/swift-env
+pushd ~/ 
 python testBuilderContent.py
 popd 
 
@@ -62,25 +62,12 @@ echo "local0.* /var/log/swift/all.log" > /etc/rsyslog.d/0-swift.conf
 mkdir /var/log/swift
 chown -R root:adm /var/log/swift
 chmod -R g+w /var/log/swift
-service rsyslog restart # TODO find how start the service in Docker container
+service rsyslog restart
 
 
 # Setting the Hash Path Prefix and Suffix
 sed -i '0,/changeme/{s/changeme/ACbO0g5Ry96CE7UqIkYbd4ZL3SVs7gkkItrnv1riiog/}' swift.conf
 sed -i '0,/changeme/{s/changeme/4mx7zVcgiAbmXdZiJR8z1ydKm393TcO47L9Ng6hnK+Y/}' swift.conf
-
-
-# Install remaining deps for Proxy Server
-
-#   mount 1G file on loop0 (note that loop1-4 were occupied before)
-#   install Openstack and liberasurecode (current release)
-#/opt/swift/tools/test-setup.sh
-
-#   install pyeclib and xattr
-#pip install pyeclib
-#pip install xattr
-#pip install dnspython>=1.14.0 --upgrade
-#pip install lxml
 
 # Adding Users to proxy-server.conf
 crudini --set /etc/swift/proxy-server.conf "filter:tempauth" user_test_tester3 testing3
@@ -88,7 +75,10 @@ crudini --set /etc/swift/proxy-server.conf "filter:tempauth" user_myaccount_me "
 crudini --set /etc/swift/proxy-server.conf "app:proxy-server" allow_account_management true
 crudini --set /etc/swift/proxy-server.conf "app:proxy-server" account_autocreate true
 
-# yum install -y python2-pyeclib.x86_64
+# Starting memcached
+service memcached start
+chkconfig memcached on
+
 # Starting the Proxy Server
 swift-init proxy start
 
@@ -97,3 +87,31 @@ swift-init account start
 swift-init container start
 swift-init object start
 swift-init proxy restart
+
+
+# Test Account Authentication
+curl -v -H 'X-Auth-User: myaccount:me' -H 'X-Auth-Key: secretpassword' http://localhost:8080/auth/v1.0/ &> res_auth
+line_num=$(grep "200 OK" res_auth | wc -l)
+if [ $line_num -ne 1 ]; then exit 1; fi
+
+
+# Verifying Account Access
+auth_token=$(grep "X-Auth-Token:" res_auth | tr ":" " " | awk '{print $3;}')
+curl -v -H 'X-Storage-Token: '$auth_token http://127.0.0.1:8080/v1/AUTH_myaccount/ &> res_account_access
+line_num=$(grep "204 No Content" res_account_access | wc -l)
+if [ $line_num -ne 1 ]; then exit 1; fi
+
+
+
+# Test Container Creation
+curl -v -H 'X-Storage-Token: '$auth_token -X PUT http://127.0.0.1:8080/v1/AUTH_myaccount/mycontainer &> res_container_creation
+line_num=$(grep "201 Created" res_container_creation | wc -l)
+if [ $line_num -ne 1 ]; then exit 1; fi
+
+# Test Object Upoad
+echo "Object content" > some_file
+swift -A http://127.0.0.1:8080/auth/v1.0/ -U myaccount:me -K secretpassword upload mycontainer some_file
+if [ $? -ne 0 ]; then exit 1; fi
+
+
+
